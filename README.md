@@ -68,7 +68,7 @@ The application will be available at:
 The application includes a `/health` endpoint that can be monitored by services like FreshPing:
 
 ```bash
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 ```
 
 ## 📦 Services
