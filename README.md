@@ -122,7 +122,7 @@ This project is created for educational purposes as part of a DevOps course fina
 
 ## 👤 Author
 
-[Your Name]
+Joshua Kakinuki
 
 ## 🙏 Acknowledgments
 
