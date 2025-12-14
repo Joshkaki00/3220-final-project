@@ -76,7 +76,7 @@ curl http://localhost:5000/health
 The application consists of three Docker containers:
 
 1. **MongoDB** (port 27017) - Database service
-2. **Flask Backend** (port 5000) - REST API
+2. **Flask Backend** (port 5001) - REST API
 3. **Nginx Frontend** (port 80) - Web interface
 
 ## 🚀 Deployment
