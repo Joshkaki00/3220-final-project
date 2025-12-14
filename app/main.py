@@ -209,6 +209,29 @@ def update_task(task_id):
         
     except PyMongoError as e:
         return jsonify({'error': 'Failed to update task'}), 500
+    
+@app.route('/api/tasks/<task_id>', methods=['DELETE'])
+def delete_task(task_id):
+    """Delete a task"""
+    # Validate ObjectId format
+    try:
+        obj_id = ObjectId(task_id)
+    except InvalidId:
+        return jsonify({'error': 'Invalid task ID format'}), 400
+    
+    try:
+        result = tasks_collection.delete_one({'_id': obj_id})
+        
+        if result.deleted_count == 0:
+            return jsonify({'error': 'Task not found'}), 404
+        
+        return jsonify({
+            'success': True,
+            'message': 'Task deleted successfully'
+        }), 200
+        
+    except PyMongoError as e:
+        return jsonify({'error': 'Failed to delete task'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
