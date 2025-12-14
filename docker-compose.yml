@@ -21,12 +21,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: flask-backend
+    container_name: srv-captain--taskmanager
     restart: unless-stopped
     ports:
       - "5001:5001"
     environment:
-      - MONGO_URI=mongodb://srv-captain--taskmanager-db:27017/taskdb
+      - MONGO_URI=mongodb://mongodb:27017/taskdb
       - FLASK_ENV=production
     depends_on:
       - mongodb
