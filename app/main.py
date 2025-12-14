@@ -44,11 +44,25 @@ def health():
 
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():
-    """Get all tasks - placeholder for implementation"""
-    return jsonify({
-        'tasks': [],
-        'message': 'Task retrieval endpoint - to be implemented'
-    })
+    """Get all tasks"""
+    try:
+        tasks = list(tasks_collection.find())
+        
+        for task in tasks:
+            task['_id'] = str(task['_id'])
+        
+        return jsonify({
+            'success': True,
+            'tasks': tasks,
+            'count': len(tasks)
+        }), 200
+        
+    except PyMongoError as e:
+        return jsonify({
+            'success': False,
+            'error': 'Database error occurred',
+            'details': str(e)
+        }), 500
 
 @app.route('/api/tasks', methods=['POST'])
 def create_task():
