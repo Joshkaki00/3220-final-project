@@ -127,5 +127,5 @@ Joshua Kakinuki
 ## 🙏 Acknowledgments
 
 - Course: Make School DevOps
-- Instructor: [Instructor Name]
+- Instructor: Droxey
 
