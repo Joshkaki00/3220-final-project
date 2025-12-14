@@ -15,7 +15,7 @@ ERROR_INVALID_ID = 'Invalid task ID format'
 ERROR_TASK_NOT_FOUND = 'Task not found'
 
 # MongoDB Configuration
-MONGO_URI = os.getenv('MONGO_URI', 'mongodb://mongodb:27017/taskdb')
+MONGO_URI = os.getenv('MONGO_URI', 'mongodb://srv-captain--taskmanager-db:27017/taskdb')
 client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
 db = client.taskdb
 tasks_collection = db.tasks
