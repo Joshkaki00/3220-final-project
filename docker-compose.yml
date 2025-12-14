@@ -24,7 +24,7 @@ services:
     container_name: flask-backend
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "5001:5001"
     environment:
       - MONGO_URI=mongodb://mongodb:27017/taskdb
       - FLASK_ENV=production
