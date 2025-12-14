@@ -150,6 +150,65 @@ def get_task(task_id):
             'error': 'Failed to retrieve task',
             'details': str(e)
         }), 500
+        
+@app.route('/api/tasks/<task_id>', methods=['PUT'])
+def update_task(task_id):
+    """Update a task"""
+    # Step 1: Validate ObjectId
+    try:
+        obj_id = ObjectId(task_id)
+    except InvalidId:
+        return jsonify({'error': 'Invalid task ID format'}), 400
+    
+    # Step 2: Validate Content-Type
+    if not request.is_json:
+        return jsonify({'error': 'Content-Type must be application/json'}), 415
+    
+    data = request.get_json()
+    
+    # Step 3: Check data exists
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+    
+    # Step 4: Build update fields with validation
+    update_fields = {}
+    
+    if 'title' in data:
+        if not data['title'].strip():
+            return jsonify({'error': 'Title cannot be empty'}), 400
+        update_fields['title'] = data['title'].strip()
+    
+    if 'description' in data:
+        update_fields['description'] = data['description'].strip()
+    
+    if 'completed' in data:
+        if not isinstance(data['completed'], bool):
+            return jsonify({'error': 'Completed must be a boolean'}), 400
+        update_fields['completed'] = data['completed']
+    
+    # Step 5: Ensure at least one field to update
+    if not update_fields:
+        return jsonify({'error': 'No valid fields to update'}), 400
+    
+    update_fields['updated_at'] = datetime.utcnow()
+    
+    # Step 6: Database operation
+    try:
+        result = tasks_collection.update_one(
+            {'_id': obj_id},
+            {'$set': update_fields}
+        )
+        
+        if result.matched_count == 0:
+            return jsonify({'error': 'Task not found'}), 404
+        
+        return jsonify({
+            'success': True,
+            'message': 'Task updated successfully'
+        }), 200
+        
+    except PyMongoError as e:
+        return jsonify({'error': 'Failed to update task'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
