@@ -5,10 +5,14 @@ from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, PyMon
 from bson import ObjectId
 from bson.errors import InvalidId
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 app = Flask(__name__)
 CORS(app)
+
+# Error message constants
+ERROR_INVALID_ID = 'Invalid task ID format'
+ERROR_TASK_NOT_FOUND = 'Task not found'
 
 # MongoDB Configuration
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://mongodb:27017/taskdb')
@@ -96,8 +100,8 @@ def create_task():
             'title': data['title'].strip(),
             'description': data.get('description', '').strip(),
             'completed': bool(data.get('completed', False)),
-            'created_at': datetime.utcnow(),
-            'updated_at': datetime.utcnow()
+            'created_at': datetime.now(timezone.utc),
+            'updated_at': datetime.now(timezone.utc)
         }
         
         result = tasks_collection.insert_one(task)
@@ -125,7 +129,7 @@ def get_task(task_id):
     except InvalidId:
         return jsonify({
             'success': False,
-            'error': 'Invalid task ID format'
+            'error': ERROR_INVALID_ID
         }), 400
     
     # Then query database
@@ -135,7 +139,7 @@ def get_task(task_id):
         if not task:
             return jsonify({
                 'success': False,
-                'error': 'Task not found'
+                'error': ERROR_TASK_NOT_FOUND
             }), 404
         
         task['_id'] = str(task['_id'])
@@ -158,7 +162,7 @@ def update_task(task_id):
     try:
         obj_id = ObjectId(task_id)
     except InvalidId:
-        return jsonify({'error': 'Invalid task ID format'}), 400
+        return jsonify({'error': ERROR_INVALID_ID}), 400
     
     # Step 2: Validate Content-Type
     if not request.is_json:
@@ -190,7 +194,7 @@ def update_task(task_id):
     if not update_fields:
         return jsonify({'error': 'No valid fields to update'}), 400
     
-    update_fields['updated_at'] = datetime.utcnow()
+    update_fields['updated_at'] = datetime.now(timezone.utc)
     
     # Step 6: Database operation
     try:
@@ -200,7 +204,7 @@ def update_task(task_id):
         )
         
         if result.matched_count == 0:
-            return jsonify({'error': 'Task not found'}), 404
+            return jsonify({'error': ERROR_TASK_NOT_FOUND}), 404
         
         return jsonify({
             'success': True,
@@ -208,7 +212,11 @@ def update_task(task_id):
         }), 200
         
     except PyMongoError as e:
-        return jsonify({'error': 'Failed to update task'}), 500
+        return jsonify({
+            'success': False,
+            'error': 'Failed to update task',
+            'details': str(e)
+        }), 500
     
 @app.route('/api/tasks/<task_id>', methods=['DELETE'])
 def delete_task(task_id):
@@ -217,13 +225,13 @@ def delete_task(task_id):
     try:
         obj_id = ObjectId(task_id)
     except InvalidId:
-        return jsonify({'error': 'Invalid task ID format'}), 400
+        return jsonify({'error': ERROR_INVALID_ID}), 400
     
     try:
         result = tasks_collection.delete_one({'_id': obj_id})
         
         if result.deleted_count == 0:
-            return jsonify({'error': 'Task not found'}), 404
+            return jsonify({'error': ERROR_TASK_NOT_FOUND}), 404
         
         return jsonify({
             'success': True,
@@ -231,7 +239,11 @@ def delete_task(task_id):
         }), 200
         
     except PyMongoError as e:
-        return jsonify({'error': 'Failed to delete task'}), 500
+        return jsonify({
+            'success': False,
+            'error': 'Failed to delete task',
+            'details': str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
