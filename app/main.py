@@ -66,10 +66,55 @@ def get_tasks():
 
 @app.route('/api/tasks', methods=['POST'])
 def create_task():
-    """Create a new task - placeholder for implementation"""
-    return jsonify({
-        'message': 'Task creation endpoint - to be implemented'
-    }), 201
+    """Create a new task"""
+    # Layer 1: Check Content-Type
+    if not request.is_json:
+        return jsonify({
+            'success': False,
+            'error': 'Content-Type must be application/json'
+        }), 415
+    
+    data = request.get_json()
+    
+    # Layer 2: Check required fields exist
+    if not data or 'title' not in data:
+        return jsonify({
+            'success': False,
+            'error': 'Title is required'
+        }), 400
+    
+    # Layer 3: Check field is not empty
+    if not data['title'].strip():
+        return jsonify({
+            'success': False,
+            'error': 'Title cannot be empty'
+        }), 400
+    
+    # Layer 4: Database operation with error handling
+    try:
+        task = {
+            'title': data['title'].strip(),
+            'description': data.get('description', '').strip(),
+            'completed': bool(data.get('completed', False)),
+            'created_at': datetime.utcnow(),
+            'updated_at': datetime.utcnow()
+        }
+        
+        result = tasks_collection.insert_one(task)
+        task['_id'] = str(result.inserted_id)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Task created successfully',
+            'task': task
+        }), 201
+        
+    except PyMongoError as e:
+        return jsonify({
+            'success': False,
+            'error': 'Failed to create task',
+            'details': str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
