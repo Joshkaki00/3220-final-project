@@ -30,10 +30,16 @@ def home():
 @app.route('/health')
 def health():
     """Health check endpoint for monitoring services"""
+    try:
+        client.admin.command('ping')
+        db_status = 'connected'
+    except (ConnectionFailure, ServerSelectionTimeoutError) as e:
+        db_status = f'disconnected: {str(e)}'
+    
     return jsonify({
         'status': 'healthy',
         'service': 'task-manager-api',
-        'database': 'connected'
+        'database': db_status
     }), 200
 
 @app.route('/api/tasks', methods=['GET'])
