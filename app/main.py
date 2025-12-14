@@ -115,6 +115,41 @@ def create_task():
             'error': 'Failed to create task',
             'details': str(e)
         }), 500
+        
+@app.route('/api/tasks/<task_id>', methods=['GET'])
+def get_task(task_id):
+    """Get a specific task by ID"""
+    # Validate ObjectId format FIRST
+    try:
+        obj_id = ObjectId(task_id)
+    except InvalidId:
+        return jsonify({
+            'success': False,
+            'error': 'Invalid task ID format'
+        }), 400
+    
+    # Then query database
+    try:
+        task = tasks_collection.find_one({'_id': obj_id})
+        
+        if not task:
+            return jsonify({
+                'success': False,
+                'error': 'Task not found'
+            }), 404
+        
+        task['_id'] = str(task['_id'])
+        return jsonify({
+            'success': True,
+            'task': task
+        }), 200
+        
+    except PyMongoError as e:
+        return jsonify({
+            'success': False,
+            'error': 'Failed to retrieve task',
+            'details': str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
