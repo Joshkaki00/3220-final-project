@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app/ .
 
-# Expose port 5000
+# Expose port 5001
 EXPOSE 5001
 
 # Run the application with gunicorn
