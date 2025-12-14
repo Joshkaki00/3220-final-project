@@ -2,96 +2,51 @@
 const API_URL = '/api';
 const HEALTH_URL = '/health';
 
-// DOM Elements
-let taskForm;
-let taskInput;
-let taskList;
-let healthStatus;
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    // Get DOM elements
-    taskForm = document.getElementById('task-form');
-    taskInput = document.getElementById('task-input');
-    taskList = document.getElementById('task-list');
-    healthStatus = document.getElementById('health-status');
-    
-    // Set up event listeners
-    if (taskForm) {
-        taskForm.addEventListener('submit', handleTaskSubmit);
-    }
-    
-    // Check health status
-    checkHealth();
-    
-    // Load tasks (placeholder)
-    loadTasks();
-});
+// Check health on page load
+checkHealth();
+loadTasks();
 
 // Health check function
-async function checkHealth() {
-    try {
-        const response = await fetch(HEALTH_URL);
-        const data = await response.json();
-        
-        if (response.ok && data.status === 'healthy') {
-            healthStatus.textContent = '✅ Connected to backend';
-            healthStatus.style.color = '#50c878';
-        } else {
-            healthStatus.textContent = '⚠️ Backend issues detected';
-            healthStatus.style.color = '#e67e22';
-        }
-    } catch (error) {
-        healthStatus.textContent = '❌ Cannot connect to backend';
-        healthStatus.style.color = '#e74c3c';
-        console.error('Health check failed:', error);
-    }
+function checkHealth() {
+    fetch(HEALTH_URL)
+        .then(response => response.json())
+        .then(data => {
+            const statusEl = document.getElementById('health-status');
+            if (data.status === 'healthy' && data.database === 'connected') {
+                statusEl.textContent = 'Status: Connected to backend';
+            } else {
+                statusEl.textContent = 'Status: Backend issues detected';
+            }
+        })
+        .catch(error => {
+            document.getElementById('health-status').textContent = 'Status: Cannot connect to backend';
+            console.error('Health check failed:', error);
+        });
 }
 
-// Handle task form submission
-function handleTaskSubmit(event) {
-    event.preventDefault();
-    
-    const taskText = taskInput.value.trim();
-    if (!taskText) return;
-    
-    // Placeholder: Will implement API call later
-    console.log('Task to create:', taskText);
-    
-    // Clear input
-    taskInput.value = '';
-    
-    // Show temporary message
-    alert('Task creation will be implemented in the next phase!');
+// Load and display tasks
+function loadTasks() {
+    fetch(`${API_URL}/tasks`)
+        .then(response => response.json())
+        .then(data => {
+            const taskList = document.getElementById('task-list');
+            
+            if (data.success && data.tasks && data.tasks.length > 0) {
+                taskList.innerHTML = '';
+                data.tasks.forEach(task => {
+                    const li = document.createElement('li');
+                    li.textContent = task.title;
+                    if (task.completed) {
+                        li.textContent += ' (completed)';
+                    }
+                    taskList.appendChild(li);
+                });
+            } else {
+                taskList.innerHTML = '<li>No tasks found</li>';
+            }
+        })
+        .catch(error => {
+            document.getElementById('task-list').innerHTML = '<li>Error loading tasks</li>';
+            console.error('Failed to load tasks:', error);
+        });
 }
-
-// Load tasks from API
-async function loadTasks() {
-    try {
-        const response = await fetch(`${API_URL}/tasks`);
-        const data = await response.json();
-        
-        console.log('Tasks loaded:', data);
-        // Rendering logic will be implemented later
-    } catch (error) {
-        console.error('Failed to load tasks:', error);
-    }
-}
-
-// Placeholder functions for future implementation
-function createTask(taskData) {
-    // TODO: Implement task creation
-}
-
-function updateTask(taskId, updates) {
-    // TODO: Implement task update
-}
-
-function deleteTask(taskId) {
-    // TODO: Implement task deletion
-}
-
-function renderTasks(tasks) {
-    // TODO: Implement task rendering
-}
-
