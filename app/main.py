@@ -8,8 +8,11 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 
-# Configuration
+# MongoDB Configuration
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://mongodb:27017/taskdb')
+client = MongoClient(MONGO_URI)
+db = client.taskdb
+tasks_collection = db.tasks
 
 @app.route('/')
 def home():
