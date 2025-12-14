@@ -1,7 +1,9 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, PyMongoError
 from bson import ObjectId
+from bson.errors import InvalidId
 import os
 from datetime import datetime
 
